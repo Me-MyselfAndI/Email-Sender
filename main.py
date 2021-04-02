@@ -1,24 +1,38 @@
-import smtplib, time
+import smtplib
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 sender_email = "gpodoksik@thecoderschool.com"
-subject = "50% off Coding Classes"
-receiver_emails = []
-parents_names   = []
+subject = "50% off for Coding Classes in April!"
+parents_emails = []
+parents_names  = []
 bcc_email = "divya@thecoderschool.com"
 
 
-password = input("\u001b[33mEnter the email password:\t\n\u001b[0m")
 
-while True:
-    email_address = input("Enter the email address:\t\t")
-    name = input("Enter the parent's first name:\t")
-    receiver_emails.append(email_address)
-    parents_names.append(name)
-    if input("Continue? Type N to stop").upper() == "N":
-        break
+recepients_file = open("recepients.txt", 'r')
+raw_lines = recepients_file.readlines()
+raw_lines.append('\n')
+for i in range(len(raw_lines)):
+    if i % 3 == 0:
+        parents_emails.append(raw_lines[i].replace('\n', ''))
+    elif i % 3 == 1:
+        parents_names.append(raw_lines[i].replace('\n', ''))
+    elif raw_lines[i] != '\n':
+        print("\u001b[35mERROR!! INCORRECT INPUT FILE!!")
+        quit(0)
+recepients_file.close()
+
+
+print("\n\nThis is the list of parents' emails and names: ")
+for i in range(len(parents_emails)):
+    print(str(i+1) + ":\tEmail:", parents_emails[i], "\n\tName:", parents_names[i])
+
+password = input("\n\u001b[33mTo confirm the list, enter the password for your email:\n\u001b[0m")
+
+
+
 
 fp = open("theCoderSchool - Progress Tracking.jpg", 'rb')
 image1 = fp.read()
@@ -32,14 +46,16 @@ fp = open("signature.png", 'rb')
 signature = fp.read()
 fp.close()
 
-for receiver_email, name in zip(receiver_emails, parents_names):
+served_recepients = open("old_recepients.txt", 'a')
+
+for receiver_email, name in zip(parents_emails, parents_names):
     print("Sending the email")
     try:
         server = smtplib.SMTP_SSL("smtp.zoho.com", 465)
         server.login(sender_email, password)
         print("Login success")
 
-        fp = open("email_body1.html")
+        fp = open("email_body.html")
         email_body = fp.read(),
         email_body = email_body[0]
         fp.close()
@@ -58,6 +74,9 @@ for receiver_email, name in zip(receiver_emails, parents_names):
         server.send_message(email_msg)
         server.quit()
         print("Server closed; sent email to: " + email_msg['To'])
+        served_recepients.write(receiver_email + "\n")
+        served_recepients.write(name + "\n")
+        served_recepients.write("\n")
     except Exception as exception:
         print("\u001b[34m\tException happened:\n" + str(exception))
 
