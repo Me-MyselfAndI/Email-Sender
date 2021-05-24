@@ -1,23 +1,70 @@
 <GUILayout>
-    size: 600, 400
+    send_button: button
+    emails: emails
+    names: names
 
-    FloatLayout:
+    size: root.width, root.height
+    BoxLayout:
+        columns: 1
         orientation: "vertical"
-
         allow_stretch: True
+        spacing: 10
+        padding: 10
+        size: root.width, root.height
+
+        BoxLayout:
+            orientation: "horizontal"
+            allow_stretch: True
+            spacing: 40
+            padding: 10
+            size: root.width, root.height*0.7
+
+            BoxLayout:
+                orientation: "vertical"
+                allow_stretch: True
+                spacing: 20
+                padding: 10
+                size_hint: (0.8, 0.6)
 
 
-        Label:
-            text: "Recipients' Emails:"
-            height: 30
-            pos_hint: {"left": 0.1}
-            pos_hint: {"top": 0.1}
+
+                Label:
+                    text: "Recipients' Emails:"
+                    size_hint: (1, None)
+                    height: 30
 
 
-        TextInput:
-            multiline: True
-            height: 200
-            pos_hint: {"left": 0.1}
-            pos_hint: {"top": 0.4}
+
+                TextInput:
+                    id: emails
+                    multiline: True
+                    size_hint: (1, None)
+                    height: (root.height - 30)*0.8
+
+            BoxLayout:
+                orientation: "vertical"
+                allow_stretch: True
+                spacing: 20
+                padding: 10
+                size_hint: (0.2, 0.6)
+
+                Label:
+                    text: "Recipients' Names:"
+                    size_hint: (1, None)
+                    height: 30
+
+
+
+                TextInput:
+                    id: names
+                    multiline: True
+                    size_hint: (1, None)
+                    height: (root.height - 30)*0.8
+
+        Button:
+            id: button
+            text: "Send"
+            size_hint: (1, 0.1)
+            on_press: root.save()
 
 
