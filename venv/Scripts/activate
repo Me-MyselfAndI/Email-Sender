@@ -37,7 +37,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="C:\__Projects\Job\theCoderSchool\CodeCoordinator\EmailSender\venv"
+VIRTUAL_ENV="C:\Users\tcsjo\Documents\GitHub\Python\Email-Sender\venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
