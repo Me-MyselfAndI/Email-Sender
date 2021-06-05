@@ -2,6 +2,7 @@
     send_button: button
     emails: emails
     names: names
+    mode_label: mode_label
 
     size: root.width, root.height
     BoxLayout:
@@ -17,6 +18,35 @@
             allow_stretch: True
             spacing: 40
             padding: 10
+            size: 100, 40
+
+            Label:
+                text: "Choose a means of communication:"
+                pos_hint: { 'top' : 1}
+                size_hint: (1, None)
+                height: 30
+
+            ToggleButton:
+                group: "means of connection"
+                text: "Phone"
+                size_hint: (1, 0.1)
+                pos_hint: { 'top' : 1}
+                on_press: root.set_comm_mode("phone")
+
+            ToggleButton:
+                group: "means of connection"
+                text: "Email"
+                size_hint: (1, 0.1)
+                pos_hint: { 'top' : 1}
+                on_press: root.set_comm_mode("email")
+
+
+
+        BoxLayout:
+            orientation: "horizontal"
+            allow_stretch: True
+            spacing: 40
+            padding: 10
             size: root.width, root.height*0.7
 
             BoxLayout:
@@ -26,14 +56,11 @@
                 padding: 10
                 size_hint: (0.8, 0.6)
 
-
-
                 Label:
+                    id: mode_label
                     text: "Recipients' Emails:"
                     size_hint: (1, None)
                     height: 30
-
-
 
                 TextInput:
                     id: emails
@@ -65,6 +92,6 @@
             id: button
             text: "Send"
             size_hint: (1, 0.1)
-            on_press: root.save()
+            on_press: root.submit()
 
 
