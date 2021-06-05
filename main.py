@@ -154,17 +154,24 @@ def get_integer(prompt):
 
 def number_alert(body, to):
     global sender_email, subject, password
-    msg = EmailMessage()
-    msg.set_content(body)
-    msg['subject'] = subject
-    msg['to'] = to
-    msg['from'] = sender_email
+    provider = ["@tmomail.net", "@mms.att.net", "@mms.uscc.net", "@vzwpix.com"]
+    to = str(to)#Convert digital number into text
+    i = 0
+    while i < len(provider):
+        selected = provider[i]
+        i += 1
+        receiver = to + selected
+        msg = EmailMessage()
+        msg.set_content(body)
+        msg['subject'] = subject
+        msg['to'] = receiver
+        msg['from'] = sender_email
 
-    server = smtplib.SMTP('smtp.gmail.com', 587)
-    server.starttls()
-    server.login(sender_email, password)
-    server.send_message(msg)
-    server.quit()
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(sender_email, password)
+        server.send_message(msg)
+        server.quit()
 
 if __name__ == '__main__':
     GUI().run()
