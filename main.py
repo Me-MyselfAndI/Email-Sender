@@ -8,6 +8,7 @@ from kivy.properties import ObjectProperty
 from kivy.uix.widget import Widget
 from kivy.lang import Builder
 from kivy.core.window import Window
+
 #Global Variables
 sender_email = "slabysh2015@gmail.com"
 subject = "Subject"
@@ -24,14 +25,23 @@ recepients_file_name = "recepients.txt"
 Builder.load_file("design.kv")
 class GUILayout(Widget):
     def __init__(self, **kwargs):
+        self.comm_mode = "email"
+        self.mode_label = ObjectProperty(None)
         self.send_button = ObjectProperty(None)
         self.emails = ObjectProperty(None)
         self.names = ObjectProperty(None)
         super(GUILayout, self).__init__(**kwargs)
         Window.size = (1200, 760)
 
+    def set_comm_mode(self, type):
+        if type in ["phone", "email"]:
+            self.comm_mode = type
+            self.mode_label.text = "Recipients' " + type[0].upper() + type[1:] + "s"
+        else:
+            print("\u001b[34mALERT!!! Communication means st incorrectly!")
+            self.comm_mode = None
 
-    def save(self):
+    def submit(self):
         raw_emails = self.emails.text.split("\n")
         raw_names = self.names.text.split("\n")
 
@@ -44,15 +54,16 @@ class GUILayout(Widget):
         recepients_file.write (recepients_str)
         recepients_file.close()
 
+        '''
         print("""
                         Send to:
                         1: EMAIL
                         2: PHONE NUMBER
                     """)
-        mode = get_integer("Enter a number: ")
+        self.comm_mode = get_integer("Enter a number: ")
+        '''
 
-
-        if mode == 1:
+        if self.comm_mode == "email":
             recepients_file = open("recepients.txt", 'r')
             raw_lines = recepients_file.readlines()
             raw_lines.append('\n')
@@ -122,8 +133,7 @@ class GUILayout(Widget):
 
             print("\u001b[33mFinished\u001b[0m")
 
-        elif mode == 2:
-            recipient = get_integer("Enter phone number: ")
+        elif self.comm_mode == "phone":
             number_alert('Hello Bitch', recipient)
             print("Success")
 
