@@ -5,7 +5,28 @@
     mode_label: mode_label
 
     size: root.width, root.height
+
     BoxLayout:
+        canvas.before:
+            Rectangle:
+                pos: self.pos
+                size: self.size
+                source: 'rick_and_morty.jpg'
+        columns: 1
+        orientation: 'vertical'
+
+        Label:
+            text: "bla"
+
+        Button:
+            text: "blabla"
+
+    BoxLayout:
+        canvas.before:
+            Rectangle:
+                pos: self.pos
+                size: self.size
+                source: 'collapse.jpg'
         columns: 1
         orientation: "vertical"
         allow_stretch: True
@@ -94,4 +115,13 @@
             size_hint: (1, 0.1)
             on_press: root.submit()
 
+    BoxLayout:
+        columns: 1
+        orientation: 'vertical'
+
+        Label:
+            text: "bla"
+
+        Button:
+            text: "blabla"
 

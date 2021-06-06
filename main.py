@@ -8,6 +8,7 @@ from kivy.properties import ObjectProperty
 from kivy.uix.widget import Widget
 from kivy.lang import Builder
 from kivy.core.window import Window
+from kivy.uix.pagelayout import PageLayout
 
 #Global Variables
 sender_email = "slabysh2015@gmail.com"
@@ -21,7 +22,7 @@ recipients_file_name = "recipients.txt"
 
 
 Builder.load_file("design.kv")
-class GUILayout(Widget):
+class GUILayout(PageLayout):
     def __init__(self, **kwargs):
         self.parents_contacts = []
         self.parents_names = []
