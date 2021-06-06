@@ -12,19 +12,19 @@ from kivy.core.window import Window
 #Global Variables
 sender_email = "slabysh2015@gmail.com"
 subject = "Subject"
-parents_emails = []
-parents_names  = []
 bcc_email = ""
 #Phone Variables
 password = 'vkoxtfzsofcjmrig'
 recipient = '7707574196@tmomail.net'
-recepients_file_name = "recepients.txt"
+recipients_file_name = "recipients.txt"
 
 
 
 Builder.load_file("design.kv")
 class GUILayout(Widget):
     def __init__(self, **kwargs):
+        self.parents_contacts = []
+        self.parents_names = []
         self.comm_mode = "email"
         self.mode_label = ObjectProperty(None)
         self.send_button = ObjectProperty(None)
@@ -41,18 +41,32 @@ class GUILayout(Widget):
             print("\u001b[34mALERT!!! Communication means st incorrectly!")
             self.comm_mode = None
 
+    def transfer_input (self):
+        recipients_file = open("recipients.txt", 'r')
+        raw_lines = recipients_file.readlines()
+        raw_lines.append('\n')
+        for i in range(len(raw_lines)):
+            if i % 3 == 0:
+                self.parents_contacts.append(raw_lines[i].replace('\n', ''))
+            elif i % 3 == 1:
+                self.parents_names.append(raw_lines[i].replace('\n', ''))
+            elif raw_lines[i] != '\n':
+                print("\u001b[35mERROR!! INCORRECT INPUT FILE!!")
+                quit(0)
+        recipients_file.close()
+
     def submit(self):
         raw_emails = self.emails.text.split("\n")
         raw_names = self.names.text.split("\n")
 
-        recepients_str = ""
+        recipients_str = ""
         for email, name in zip (raw_emails, raw_names):
-            recepients_str += (email + '\n' + name + "\n\n")
-        recepients_str = recepients_str[:len(recepients_str)-1]
+            recipients_str += (email + '\n' + name + "\n\n")
+        recipients_str = recipients_str[:len(recipients_str)-1]
 
-        recepients_file = open(recepients_file_name, 'w')
-        recepients_file.write (recepients_str)
-        recepients_file.close()
+        recipients_file = open(recipients_file_name, 'w')
+        recipients_file.write (recipients_str)
+        recipients_file.close()
 
         '''
         print("""
@@ -64,22 +78,12 @@ class GUILayout(Widget):
         '''
 
         if self.comm_mode == "email":
-            recepients_file = open("recepients.txt", 'r')
-            raw_lines = recepients_file.readlines()
-            raw_lines.append('\n')
-            for i in range(len(raw_lines)):
-                if i % 3 == 0:
-                    parents_emails.append(raw_lines[i].replace('\n', ''))
-                elif i % 3 == 1:
-                    parents_names.append(raw_lines[i].replace('\n', ''))
-                elif raw_lines[i] != '\n':
-                    print("\u001b[35mERROR!! INCORRECT INPUT FILE!!")
-                    quit(0)
-            recepients_file.close()
+
+            self.transfer_input()
 
             print("\n\nThis is the list of parents' emails and names: ")
-            for i in range(len(parents_emails)):
-                print(str(i + 1) + ":\tEmail:", parents_emails[i], "\n\tName:", parents_names[i])
+            for i in range(len(self.parents_contacts)):
+                print(str(i + 1) + ":\tEmail:", self.parents_contacts[i], "\n\tName:", self.parents_names[i])
 
             password = input("\n\u001b[33mTo confirm the list, enter the password for your email:\n\u001b[0m")
 
@@ -95,9 +99,9 @@ class GUILayout(Widget):
             signature = fp.read()
             fp.close()
 
-            served_recepients = open("old_recepients.txt", 'a')
+            served_recipients = open("old_recipients.txt", 'a')
 
-            for receiver_email, name in zip(parents_emails, parents_names):
+            for receiver_email, name in zip(self.parents_contacts, self.parents_names):
                 print("Sending the email")
                 try:
                     server = smtplib.SMTP("smtp.gmail.com", 587)
@@ -125,17 +129,21 @@ class GUILayout(Widget):
                     server.send_message(email_msg)
                     server.quit()
                     print("Server closed; sent email to: " + email_msg['To'])
-                    served_recepients.write(receiver_email + "\n")
-                    served_recepients.write(name + "\n")
-                    served_recepients.write("\n")
+                    served_recipients.write(receiver_email + "\n")
+                    served_recipients.write(name + "\n")
+                    served_recipients.write("\n")
                 except Exception as exception:
                     print("\u001b[34m\tException happened:\n" + str(exception))
 
             print("\u001b[33mFinished\u001b[0m")
 
         elif self.comm_mode == "phone":
-            number_alert('Hello Bitch', recipient)
-            print("Success")
+            self.transfer_input()
+
+            for phone_num in self.parents_contacts:
+                number_alert('Hello Bitch', phone_num)
+                print("Success")
+
 
 
 class GUI(App):
