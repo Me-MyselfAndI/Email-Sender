@@ -47,6 +47,7 @@ class GUILayout(PageLayout):
             print("\u001b[34mALERT!!! Communication means set incorrectly!")
             self.comm_mode = None
 
+
     def transfer_input (self):
         recipients_file = open("recipients.txt", 'r')
         raw_lines = recipients_file.readlines()
