@@ -129,8 +129,6 @@ class GUILayout(PageLayout):
                     email_msg = MIMEMultipart()
                     email_msg.attach(MIMEText(email_body, 'html'))
 
-                    email_msg.attach(MIMEImage(image1))
-                    email_msg.attach(MIMEImage(image2))
                     email_msg['Subject'] = subject
                     email_msg['From'] = sender_email
 
@@ -150,30 +148,15 @@ class GUILayout(PageLayout):
         elif self.comm_mode == "phone":
             self.transfer_input()
 
+            print("\n\nThis is the list of clients' phone numbers and names: ")
+            for i in range(len(self.parents_contacts)):
+                print(str(i + 1) + ":\tEmail:", self.parents_contacts[i], "\n\tName:",
+                      self.parents_names[i])
+            password = input("\n\u001b[33mTo confirm the list, enter the password for your email:\n\u001b[0m")
             for phone_num, name in zip(self.parents_contacts, self.parents_names):
                     print("Sending the email")
                     try:
-                        print("\n\nThis is the list of clients' phone numbers and names: ")
-                        for i in range(len(self.parents_contacts)):
-                            print(str(i + 1) + ":\tEmail:", self.parents_contacts[i], "\n\tName:",
-                                  self.parents_names[i])
-
-                        password = input(
-                            "\n\u001b[33mTo confirm the list, enter the password for your email:\n\u001b[0m")
-
-                        fp = open("email_body.html")
-                        email_body = fp.read(),
-                        email_body = email_body[0]
-                        fp.close()
-                        email_body = email_body.format(name=name)
-
-                        email_msg = EmailMessage()
-                        email_msg.set_content(email_body)
-
-                        email_msg['Subject'] = subject
-                        email_msg['From'] = sender_email
-
-                        number_alert(email_msg, phone_num)
+                        number_alert("sms_body.html", name, phone_num, password)
                     except Exception as exception:
                         print("\u001b[34m\tException happened:\n" + str(exception))
 
@@ -192,23 +175,35 @@ def get_integer(prompt):
             return int(num)
         print("Invalid input please enter a number")
 
-def number_alert(email_msg, to):
+def number_alert(sms_file, name, to, password):
     provider = ["@vzwpix.com", "@tmomail.net", "@mms.att.net", "@mms.uscc.net"]
     to = str(to)#Convert digital number into text
-    i = 0
+    fp = open(sms_file)
+    sms_body = fp.read(),
+    sms_body = sms_body[0]
+    fp.close()
     for selected in provider:
+        sms_body = sms_body.format(name=name)
+
+        sms_msg = EmailMessage()
+        sms_msg.set_content(sms_body)
+
+        sms_msg['Subject'] = subject
+        sms_msg['From'] = sender_email
+        receiver = to + selected
         try:
-            receiver = to + selected
-            email_msg["To"] = receiver
-            print(email_msg["To"])
+            sms_msg["To"] = receiver
+            print(sms_msg["To"])
             server = smtplib.SMTP('smtp.gmail.com', 587)
             server.starttls()
             server.login(sender_email, password)
-            server.send_message(email_msg)
+            server.send_message(sms_msg)
             server.quit()
-            return
-        except Exception:
+        except Exception as bad_guy:
+            print(bad_guy)
             print("Wrong operator:", selected, "- trying further")
+
+
 
 if __name__ == '__main__':
     GUI().run()
