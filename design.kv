@@ -6,21 +6,19 @@
 
     size: root.width, root.height
 
-    BoxLayout:
+    GridLayout:
         canvas.before:
             Rectangle:
                 pos: self.pos
                 size: self.size
                 source: 'rick_and_morty.jpg'
 
-        columns: 1
-        orientation: 'vertical'
-
-        Label:
-            text: "bla"
-
-        Button:
-            text: "blabla"
+        cols: 1
+        pos: 100, 100
+        size_hint: (None, None)
+        size: (root.width - 100, root.height - 100)
+        PromptSetup:
+        PromptAddNew:
 
     BoxLayout:
         canvas.before:
@@ -102,8 +100,6 @@
                     size_hint: (1, None)
                     height: 30
 
-
-
                 TextInput:
                     id: names
                     multiline: True
@@ -116,14 +112,48 @@
             size_hint: (1, 0.1)
             on_press: root.submit()
 
-    BoxLayout:
-        columns: 1
-        orientation: 'vertical'
 
+<PromptAddNew@BoxLayout>
+    orientation: "horizontal"
+    columns: 2
+    padding: 30
+    spacing: 10
+    Button:
+        text: "Add a short textbox"
+        size_hint: (0.5, None)
+        heigth: 40
+    Button:
+        text: "Add a long textbox"
+        size_hint: (0.5, None)
+        heigth: 40
+
+
+<PromptSetup@BoxLayout>
+    cols: 2
+    orientation: "horizontal"
+    padding: 30
+    spacing: 10
+    Button:
+        size_hint: (0.1, None)
+        pos_hint: {"top": 1}
+        text: "Delete Field"
+        height: 60
+    GridLayout:
+        size_hint: (0.9, 1)
+        cols: 1
         Label:
-            text: "bla"
+            text: "Title"
+            background_color: (0.3, 0.3, 0.3, 1)
+            canvas.before:
+                Color:
+                    rgba: self.background_color
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
+            size_hint: (1, None)
+            height: 30
+        TextInput:
 
-        Button:
-            text: "blabla"
-
+            size_hint: (1, None)
+            height: 30
 
