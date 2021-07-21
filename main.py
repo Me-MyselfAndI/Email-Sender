@@ -1,5 +1,5 @@
-import smtplib, random, threading
-from email.mime.image import MIMEImage
+import smtplib
+import time
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.message import EmailMessage
@@ -12,12 +12,10 @@ from kivy.uix.popup import Popup
 from kivy.uix.button import Button
 from kivy.properties import ObjectProperty
 from kivy.uix.textinput import TextInput
-from kivy.uix.widget import Widget
 from kivy.lang import Builder
 from kivy.core.window import Window
 from kivy.uix.pagelayout import PageLayout
 from kivy.uix.boxlayout import BoxLayout
-from time import sleep
 
 #Global Variables
 sender_email = "slabysh2015@gmail.com"
@@ -27,15 +25,18 @@ bcc_email = ""
 password = 'vkoxtfzsofcjmrig'
 recipient = '7707574196@tmomail.net'
 recipients_file_name = "recipients.txt"
+Builder.load_file("design.kv")
 
 class PromptAddNew(BoxLayout):
     orientation = "horizontal"
     columns = 2
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.button_add_short = Button(text="Add short textbox", size_hint=(0.5, None), height=40)
-        self.button_add_long = Button(text="Add short textbox", size_hint=(0.5, None), height=40)
+        self.button_add_short = Button(text="Add Short Textbox", size_hint=(0.4, None), height=40)
+        self.button_add_long = Button(text="Add Short Textbox", size_hint=(0.4, None), height=40)
+        self.button_save = Button (text="Save Custom Fields", size_hint=(0.2, None), height=40)
         self.add_widget(self.button_add_short)
+        self.add_widget(self.button_save)
         self.add_widget(self.button_add_long)
 
     def on_parent(self, *args):
@@ -60,6 +61,10 @@ class TextBoxSetup(GridLayout):
             self.pos_hint = {"top": 1}
             self.height = 60
             self.width = 60
+
+
+        def on_press(self, *args):
+            self.parent.parent.remove_widget(self.parent)
 
     class FieldTitle (Label):
         def __init__(self, text, is_long=False, **kwargs):
@@ -91,16 +96,23 @@ class TextBoxSetup(GridLayout):
         self.field_title = self.FieldTitle (name, is_long=is_long, **kwargs)
         self.setup_label_field = TextInput (size_hint=(1, None), height=30, text="", hint_text="This field's title")
         self.setup_label_field.bind(text=self.update)
-        self.cols = 4
+
         self.spacing = 10
-        self.size_hint = (0.22, None)
+        self.cols = 1
+        self.size_hint = (0.5, None)
         self.all_widgets = BoxLayout()
         self.all_widgets.add_widget(self.delete_button)
         self.grid_layout = GridLayout(size_hint=(0.8, 1), cols=1)
         self.grid_layout.add_widget(self.field_title)
         self.grid_layout.add_widget(self.setup_label_field)
+
+    def on_parent(self, *args):
         self.all_widgets.add_widget(self.grid_layout)
-        self.add_widget(self.all_widgets)
+        print (self.parent.children)
+        for i in range (len(self.parent.children)):
+            curr_child = self.parent.children[i]
+            if type(curr_child) == GridLayout:
+                curr_child.add_widget(self.all_widgets)
 
     def update (self, *args):
         self.text = self.setup_label_field.text
@@ -108,7 +120,6 @@ class TextBoxSetup(GridLayout):
         self.field_title.text = self.text + " " + ("(short)" if not self.field_title.is_long else "(long)")
 
 
-Builder.load_file("design.kv")
 class GUILayout(PageLayout):
     def __init__(self, **kwargs):
         super(GUILayout, self).__init__(**kwargs)
@@ -121,7 +132,13 @@ class GUILayout(PageLayout):
         self.contacts = ObjectProperty(None)
         self.names = ObjectProperty(None)
 
-        Window.size = (1200, 760)
+        Window.size = (1000, 700)
+
+    def get_custom_fields (self):
+        self.custom_fields = []
+        for field in self.ids.setup_page.children:
+            self.custom_fields.append(field.text)
+        print(self.custom_fields)
 
     def set_comm_mode(self, type):
         if type in ["phone", "email"]:
