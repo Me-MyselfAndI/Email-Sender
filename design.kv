@@ -1,12 +1,13 @@
 <GUILayout>
     send_button: button
-    emails: emails
+    contacts: emails
+    setup_page: setup_page
     names: names
     mode_label: mode_label
-
     size: root.width, root.height
 
     GridLayout:
+        id: setup_page
         canvas.before:
             Rectangle:
                 pos: self.pos
@@ -15,10 +16,14 @@
 
         cols: 1
         pos: 100, 100
+        spacing: 10, 10
+        padding: 50, 50
         size_hint: (None, None)
         size: (root.width - 100, root.height - 100)
-        PromptSetup:
+
         PromptAddNew:
+            height: 0.4 * root.height
+            page: root
 
     BoxLayout:
         canvas.before:
@@ -111,49 +116,3 @@
             text: "Send"
             size_hint: (1, 0.1)
             on_press: root.submit()
-
-
-<PromptAddNew@BoxLayout>
-    orientation: "horizontal"
-    columns: 2
-    padding: 30
-    spacing: 10
-    Button:
-        text: "Add a short textbox"
-        size_hint: (0.5, None)
-        heigth: 40
-    Button:
-        text: "Add a long textbox"
-        size_hint: (0.5, None)
-        heigth: 40
-
-
-<PromptSetup@BoxLayout>
-    cols: 2
-    orientation: "horizontal"
-    padding: 30
-    spacing: 10
-    Button:
-        size_hint: (0.1, None)
-        pos_hint: {"top": 1}
-        text: "Delete Field"
-        height: 60
-    GridLayout:
-        size_hint: (0.9, 1)
-        cols: 1
-        Label:
-            text: "Title"
-            background_color: (0.3, 0.3, 0.3, 1)
-            canvas.before:
-                Color:
-                    rgba: self.background_color
-                Rectangle:
-                    size: self.size
-                    pos: self.pos
-            size_hint: (1, None)
-            height: 30
-        TextInput:
-
-            size_hint: (1, None)
-            height: 30
-
