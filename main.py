@@ -42,6 +42,7 @@ class PromptAddNew(BoxLayout):
     def on_parent(self, *args):
         self.button_add_short.on_press = self.add_short_field
         self.button_add_long.on_press = self.add_long_field
+        self.button_save.on_press = self.parent.parent.get_custom_fields
 
     def add_short_field(self):
         self.add_field(is_long=False)
@@ -61,7 +62,6 @@ class TextBoxSetup(GridLayout):
             self.pos_hint = {"top": 1}
             self.height = 60
             self.width = 60
-
 
         def on_press(self, *args):
             self.parent.parent.remove_widget(self.parent)
@@ -123,22 +123,25 @@ class TextBoxSetup(GridLayout):
 class GUILayout(PageLayout):
     def __init__(self, **kwargs):
         super(GUILayout, self).__init__(**kwargs)
-        self.parents_contacts = []
-        self.parents_names = []
+        self.clients_contacts = []
+        self.custom_fields = []
+        self.custom_field_values = {}
         self.comm_mode = "email"
         self.setup_page = ObjectProperty(None)
         self.mode_label = ObjectProperty(None)
         self.send_button = ObjectProperty(None)
         self.contacts = ObjectProperty(None)
         self.names = ObjectProperty(None)
-
         Window.size = (1000, 700)
 
-    def get_custom_fields (self):
+    def get_custom_fields(self):
         self.custom_fields = []
         for field in self.ids.setup_page.children:
-            self.custom_fields.append(field.text)
+            if type(field) == TextBoxSetup:
+                self.custom_fields.append(field.text)
         print(self.custom_fields)
+        for child in self.custom_fields:
+            self.custom_field_values[child] = []
 
     def set_comm_mode(self, type):
         if type in ["phone", "email"]:
@@ -154,9 +157,9 @@ class GUILayout(PageLayout):
         raw_lines.append('\n')
         for i in range(len(raw_lines)):
             if i % 3 == 0:
-                self.parents_contacts.append(raw_lines[i].replace('\n', ''))
+                self.clients_contacts.append(raw_lines[i].replace('\n', ''))
             elif i % 3 == 1:
-                self.parents_names.append(raw_lines[i].replace('\n', ''))
+                self.clients_names.append(raw_lines[i].replace('\n', ''))
             elif raw_lines[i] != '\n':
                 print("\u001b[35mERROR!! INCORRECT INPUT FILE!!")
                 quit(0)
@@ -205,13 +208,13 @@ class GUILayout(PageLayout):
             self.transfer_input()
 
             print("\n\nClients' emails and names: ")
-            for i in range(len(self.parents_contacts)):
-                print(str(i + 1) + ":\tEmail:", self.parents_contacts[i], "\n\tName:", self.parents_names[i])
+            for i in range(len(self.clients_contacts)):
+                print(str(i + 1) + ":\tEmail:", self.clients_contacts[i], "\n\tName:", self.clients_names[i])
 
             password = input("\n\u001b[33mTo confirm the list, enter the password for your email:\n\u001b[0m")
             served_recipients = open("old_recipients.txt", 'a')
 
-            for receiver_email, name in zip(self.parents_contacts, self.parents_names):
+            for receiver_email, name in zip(self.clients_contacts, self.clients_names):
                 print("Sending the email")
                 try:
                     server = smtplib.SMTP("smtp.gmail.com", 587)
@@ -249,11 +252,11 @@ class GUILayout(PageLayout):
             self.transfer_input()
 
             print("\n\nClients' phone numbers and names: ")
-            for i in range(len(self.parents_contacts)):
-                print(str(i + 1) + ":\tPhone #:", self.parents_contacts[i], "\n\tName:",
-                      self.parents_names[i])
+            for i in range(len(self.clients_contacts)):
+                print(str(i + 1) + ":\tPhone #:", self.clients_contacts[i], "\n\tName:",
+                      self.clients_names[i])
             password = input("\n\u001b[33mTo confirm the list, enter the password for your email:\n\u001b[0m")
-            for phone_num, name in zip(self.parents_contacts, self.parents_names):
+            for phone_num, name in zip(self.clients_contacts, self.clients_names):
                     print("Sending the email")
                     try:
                         number_alert("sms_body.html", name, phone_num, password)
