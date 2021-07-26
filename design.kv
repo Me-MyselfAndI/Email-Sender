@@ -1,20 +1,20 @@
 <GUILayout>
     send_button: button
-    contacts: emails
+    send_page: send_page
     setup_page: setup_page
-    names: names
-    mode_label: mode_label
     size: root.width, root.height
     textbox_setups: textbox_setups
-    border: 20
+    entry_fields_box_layout: entry_fields
 
+
+    border: 20
     GridLayout:
         id: setup_page
         canvas.before:
             Rectangle:
                 pos: self.pos
                 size: self.size
-                source: 'rick_and_morty.jpg'
+                source: 'Images/rick_and_morty.jpg'
 
         cols: 1
         pos: 100, 100
@@ -35,11 +35,12 @@
             height: 0.4 * root.height
 
     BoxLayout:
+        id: send_page
         canvas.before:
             Rectangle:
                 pos: self.pos
                 size: self.size
-                source: 'collapse.jpg'
+                source: 'Images/collapse.jpg'
         columns: 1
         orientation: "vertical"
         allow_stretch: True
@@ -77,48 +78,12 @@
 
 
         BoxLayout:
+            id: entry_fields
             orientation: "horizontal"
             allow_stretch: True
             spacing: 40
             padding: 10
             size: root.width, root.height*0.7
-
-            BoxLayout:
-                orientation: "vertical"
-                allow_stretch: True
-                spacing: 20
-                padding: 10
-                size_hint: (0.8, 0.6)
-
-                Label:
-                    id: mode_label
-                    text: "Recipients' Emails:"
-                    size_hint: (1, None)
-                    height: 30
-
-                TextInput:
-                    id: emails
-                    multiline: True
-                    size_hint: (1, None)
-                    height: (root.height - 30)*0.8
-
-            BoxLayout:
-                orientation: "vertical"
-                allow_stretch: True
-                spacing: 20
-                padding: 10
-                size_hint: (0.2, 0.6)
-
-                Label:
-                    text: "Recipients' Names:"
-                    size_hint: (1, None)
-                    height: 30
-
-                TextInput:
-                    id: names
-                    multiline: True
-                    size_hint: (1, None)
-                    height: (root.height - 30)*0.8
 
         Button:
             id: button

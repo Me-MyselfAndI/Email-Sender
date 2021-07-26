@@ -1,197 +1,152 @@
-import smtplib
-import time
+import smtplib, time
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.message import EmailMessage
 from kivy.app import App
-from kivy.graphics.context_instructions import Color
-from kivy.graphics.vertex_instructions import Rectangle
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.label import Label
 from kivy.uix.popup import Popup
 from kivy.uix.button import Button
 from kivy.properties import ObjectProperty
-from kivy.uix.textinput import TextInput
 from kivy.lang import Builder
 from kivy.core.window import Window
 from kivy.uix.pagelayout import PageLayout
-from kivy.uix.boxlayout import BoxLayout
 
-#Global Variables
+from text_box_setup import TextBoxSetup
+from prompt_add_new import PromptAddNew   # NOT to be deleted; used in design.kv
+from entry_field import EntryField        # NOT to be deleted; used in design.kv
+
+
 sender_email = "slabysh2015@gmail.com"
 subject = "Subject"
 bcc_email = ""
-#Phone Variables
 password = 'vkoxtfzsofcjmrig'
 recipient = '7707574196@tmomail.net'
 recipients_file_name = "recipients.txt"
+served_recipients_file_name = "old_recipients.txt"
 Builder.load_file("design.kv")
 
-class PromptAddNew(BoxLayout):
-    orientation = "horizontal"
-    columns = 2
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.button_add_short = Button(text="Add Short Textbox", size_hint=(0.4, None), height=40)
-        self.button_add_long = Button(text="Add Short Textbox", size_hint=(0.4, None), height=40)
-        self.button_save = Button (text="Save Custom Fields", size_hint=(0.2, None), height=40)
-        self.add_widget(self.button_add_short)
-        self.add_widget(self.button_save)
-        self.add_widget(self.button_add_long)
 
-    def on_parent(self, *args):
-        self.button_add_short.on_press = self.add_short_field
-        self.button_add_long.on_press = self.add_long_field
-        self.button_save.on_press = self.parent.parent.get_custom_fields
 
-    def add_short_field(self):
-        self.add_field(is_long=False)
 
-    def add_long_field(self):
-        self.add_field(is_long=True)
-
-    def add_field(self, is_long=False):
-        self.parent.add_widget(TextBoxSetup(is_long=is_long))
-
-class TextBoxSetup(GridLayout):
-    class DeleteButton(Button):
-        def __init__(self, **kwargs):
-            super().__init__(**kwargs)
-            self.text = " Delete "
-            self.size_hint = (None, None)
-            self.pos_hint = {"top": 1}
-            self.height = 60
-            self.width = 60
-
-        def on_press(self, *args):
-            self.parent.parent.remove_widget(self.parent)
-
-    class FieldTitle (Label):
-        def __init__(self, text, is_long=False, **kwargs):
-            super().__init__(**kwargs)
-            self.is_long = is_long
-            self.text = "ENTER TITLE " + ("(short)" if not is_long else "(long)")
-            self.background_color = (0.3, 0.3, 0.3, 1)
-            self.size_hint = (1, None)
-            self.height = 30
-            self.bind (pos=self.update, size=self.update)
-            with self.canvas.before:
-                Color(rgba=self.background_color)
-                self.rect = Rectangle(size=self.size, pos=self.pos)
-
-        def update(self, *args):
-            self.rect.pos = self.pos
-            self.rect.size = self.size
-
-        def on_text (self, *args):
-            try:
-                self.parent.text = self.text
-            except Exception:
-                pass
-
-    def __init__(self, name="", is_long=False, **kwargs):
-        super().__init__(**kwargs)
-        self.text = name
-        self.delete_button = self.DeleteButton (**kwargs)
-        self.field_title = self.FieldTitle (name, is_long=is_long, **kwargs)
-        self.setup_label_field = TextInput (size_hint=(1, None), height=30, text="", hint_text="This field's title")
-        self.setup_label_field.bind(text=self.update)
-
-        self.spacing = 10
-        self.cols = 1
-        self.size_hint = (0.5, None)
-        self.all_widgets = BoxLayout()
-        self.all_widgets.add_widget(self.delete_button)
-        self.grid_layout = GridLayout(size_hint=(0.8, 1), cols=1)
-        self.grid_layout.add_widget(self.field_title)
-        self.grid_layout.add_widget(self.setup_label_field)
-
-    def on_parent(self, *args):
-        self.all_widgets.add_widget(self.grid_layout)
-        print (self.parent.children)
-        for i in range (len(self.parent.children)):
-            curr_child = self.parent.children[i]
-            if type(curr_child) == GridLayout:
-                curr_child.add_widget(self.all_widgets)
-
-    def update (self, *args):
-        self.text = self.setup_label_field.text
-        self.field_title.text = self.text
-        self.field_title.text = self.text + " " + ("(short)" if not self.field_title.is_long else "(long)")
 
 
 class GUILayout(PageLayout):
+    setup_page = ObjectProperty(None)
+    send_page = ObjectProperty(None)
+    entry_fields_box_layout = ObjectProperty(None)
+    send_button = ObjectProperty(None)
+    contacts = ObjectProperty(None)
     def __init__(self, **kwargs):
         super(GUILayout, self).__init__(**kwargs)
-        self.clients_contacts = []
-        self.custom_fields = []
-        self.custom_field_values = {}
+        self.field_names = ["contact"]
+        self.field_values = {"contact": []}
+        self.field_is_long = {"contact": True}
         self.comm_mode = "email"
-        self.setup_page = ObjectProperty(None)
-        self.mode_label = ObjectProperty(None)
-        self.send_button = ObjectProperty(None)
-        self.contacts = ObjectProperty(None)
-        self.names = ObjectProperty(None)
+
         Window.size = (1000, 700)
 
-    def get_custom_fields(self):
-        self.custom_fields = []
-        for field in self.ids.setup_page.children:
+    def save_custom_fields(self):
+        self.field_names = ["contact"]
+        total_long_fields, total_short_fields = 0, 0
+        for field in reversed(self.ids.setup_page.children):
             if type(field) == TextBoxSetup:
-                self.custom_fields.append(field.text)
-        print(self.custom_fields)
-        for child in self.custom_fields:
-            self.custom_field_values[child] = []
+                self.field_names.append(field.text)
+                self.field_is_long[field.text] = field.is_long
+                if field.is_long:
+                    total_long_fields += 1
+                else:
+                    total_short_fields += 1
+
+        factor = 2
+        short_field_width = 1/(total_short_fields + factor*total_long_fields)
+        long_field_width = short_field_width*factor
+
+        for field_name in self.field_names:
+            self.entry_fields_box_layout.add_widget(EntryField(text=field_name, width_proportion=long_field_width if self.field_is_long[field_name] else short_field_width))
+
+        for child in self.field_names:
+            self.field_values[child] = []
 
     def set_comm_mode(self, type):
         if type in ["phone", "email"]:
             self.comm_mode = type
-            self.mode_label.text = "Recipients' " + type[0].upper() + type[1:] + "s"
         else:
             print("\u001b[34mALERT!!! Communication means set incorrectly!")
             self.comm_mode = None
 
-    def transfer_input (self):
-        recipients_file = open("recipients.txt", 'r')
-        raw_lines = recipients_file.readlines()
-        raw_lines.append('\n')
-        for i in range(len(raw_lines)):
-            if i % 3 == 0:
-                self.clients_contacts.append(raw_lines[i].replace('\n', ''))
-            elif i % 3 == 1:
-                self.clients_names.append(raw_lines[i].replace('\n', ''))
-            elif raw_lines[i] != '\n':
-                print("\u001b[35mERROR!! INCORRECT INPUT FILE!!")
-                quit(0)
 
-        recipients_file.close()
+
+
+
+    def transfer_input (self):
+        for entry_field in self.entry_fields_box_layout.children:
+            self.field_values[entry_field.name] = entry_field.text_input.text.splitlines()
+
+        output_file = open(recipients_file_name, "w")
+        output_file.write(str(len(self.field_names))+"\n")
+        for field in self.field_names:
+            output_file.write(field+"\n")
+        output_file.write("\n")
+
+        for i in range(len(self.field_values["contact"])):
+            for field_name in self.field_names:
+                curr_entry = self.field_values[field_name][i]
+                output_file.write(curr_entry+"\n")
+            output_file.write("###---###---###\n")
+
+        output_file.close()
+
+
+        print(self.field_values)
+
 
     def submit(self):
-        raw_contacts = self.contacts.text.split("\n")
-        raw_names = self.names.text.split("\n")
+        class Recipient:
+            def __init__(r_self, field_names, field_values, recip_num):
+                r_self.all_attributes = []
+                for field in field_names:
+                    setattr(r_self, field, field_values[field][recip_num])
+                    r_self.all_attributes.append(field)
+                    print(getattr(r_self, field))
+
+            def check_contact(r_self):
+                if self.comm_mode == "email":
+                    if not ("@" in r_self.contact and "." in r_self.contact):
+                        print("Wrong email:", r_self.contact)
+                        popup = Popup(title="Wrong email: " + r_self.contact,
+                                      content=Button(text='I will check!', size_hint=(1, None),
+                                                     pos_hint={'center': 0.5}, height=30),
+                                      auto_dismiss=False, size_hint=(None, None), size=(400, 100))
+                        popup.content.bind(on_press=popup.dismiss)
+                        popup.open()
+                        return -1
+                else:
+                    r_self.contact = r_self.contact.replace('-', '').replace('.', '').replace("(", '').replace(")", "")
+                    if "@" in r_self.contact or not all(x.isnumeric() or x == '+' for x in r_self.contact):
+                        print("Did you mean to send phone messages?")
+                        popup = Popup(title="Wrong phone number: " + r_self.contact,
+                                      content=Button(text='I will check!', size_hint=(1, None), pos_hint={'center': 0.5}, height=30),
+                                      auto_dismiss=False, size_hint=(None, None), size=(400, 100))
+                        popup.content.bind(on_press=popup.dismiss)
+                        popup.open()
+                        return -1
+                for attribute in r_self.all_attributes:
+                    print(getattr(r_self, attribute))
+
+        self.transfer_input()
+
+        recipients = []
+        for i in range(len(self.field_values["contact"])):
+            new_recip = Recipient(self.field_names, self.field_values, i)
+            if (new_recip.check_contact() == -1):
+                return
+            recipients.append(new_recip)
+        input()
+
 
         for i in range(len(raw_contacts)):
             if (raw_contacts[i] == ""):
                 continue
-            if self.comm_mode == "email":
-                if not ("@" in raw_contacts[i] and "." in raw_contacts[i]):
-                    print("Wrong email:", raw_contacts[i])
-                    popup = Popup(title="Wrong email: " + raw_contacts[i], content=Button(text='I will check!', size_hint=(1, None), pos_hint={'center': 0.5}, height=30),
-                                  auto_dismiss=False, size_hint=(None, None), size=(400, 100))
-                    popup.content.bind(on_press=popup.dismiss)
-                    popup.open()
-                    return
-            else:
-                raw_contacts[i] = raw_contacts[i].replace('-', '').replace('.', '').replace("(", '').replace(")", "")
-                if "@" in raw_contacts[i] or not all(x.isnumeric() or x == '+' for x in raw_contacts[i]):
-                    print("Did you mean to send phone messages?")
-                    popup = Popup(title="Wrong phone number: " + raw_contacts[i],
-                                  content=Button(text='I will check!', size_hint=(1, None), pos_hint={'center': 0.5},
-                                                 height=30),
-                                  auto_dismiss=False, size_hint=(None, None), size=(400, 100))
-                    popup.content.bind(on_press=popup.dismiss)
-                    popup.open()
-                    return
+
 
         recipients_str = ""
         for contact, name in zip (raw_contacts, raw_names):
@@ -202,17 +157,13 @@ class GUILayout(PageLayout):
         recipients_file.write (recipients_str)
         recipients_file.close()
 
-
         if self.comm_mode == "email":
-
-            self.transfer_input()
-
             print("\n\nClients' emails and names: ")
             for i in range(len(self.clients_contacts)):
                 print(str(i + 1) + ":\tEmail:", self.clients_contacts[i], "\n\tName:", self.clients_names[i])
 
             password = input("\n\u001b[33mTo confirm the list, enter the password for your email:\n\u001b[0m")
-            served_recipients = open("old_recipients.txt", 'a')
+            served_recipients = open(served_recipients_file_name, 'a')
 
             for receiver_email, name in zip(self.clients_contacts, self.clients_names):
                 print("Sending the email")
@@ -249,8 +200,6 @@ class GUILayout(PageLayout):
             print("\u001b[33mFinished\u001b[0m")
 
         elif self.comm_mode == "phone":
-            self.transfer_input()
-
             print("\n\nClients' phone numbers and names: ")
             for i in range(len(self.clients_contacts)):
                 print(str(i + 1) + ":\tPhone #:", self.clients_contacts[i], "\n\tName:",
@@ -263,21 +212,11 @@ class GUILayout(PageLayout):
                     except Exception as exception:
                         print("\u001b[34m\tException happened:\n" + str(exception))
 
+        recipients_data_file.close()
 
 class GUI(App):
     def build(self):
         return GUILayout()
-
-
-
-#Check if input is number
-def get_integer(prompt):
-    while True:
-        num = input(prompt)
-        if num.isnumeric():
-            return int(num)
-        print("Invalid input please enter a number")
-
 def number_alert(sms_file, name, to, password):
     provider = ["@vzwpix.com", "@tmomail.net", "@mms.att.net", "@mms.uscc.net"]
     to = str(to)#Convert digital number into text
@@ -305,8 +244,6 @@ def number_alert(sms_file, name, to, password):
         except Exception as bad_guy:
             print(bad_guy)
             print("Wrong operator:", selected, "- trying further")
-
-
 
 if __name__ == '__main__':
     GUI().run()
