@@ -19,7 +19,6 @@ sender_email = "slabysh2015@gmail.com"
 subject = "Subject"
 bcc_email = ""
 password = 'vkoxtfzsofcjmrig'
-recipient = '7707574196@tmomail.net'
 recipients_file_name = "recipients.txt"
 served_recipients_file_name = "old_recipients.txt"
 Builder.load_file("design.kv")
@@ -61,7 +60,8 @@ class GUILayout(PageLayout):
         long_field_width = short_field_width*factor
 
         for field_name in self.field_names:
-            self.entry_fields_box_layout.add_widget(EntryField(text=field_name, width_proportion=long_field_width if self.field_is_long[field_name] else short_field_width))
+            self.entry_fields_box_layout.add_widget(
+                EntryField(text=field_name, width_proportion=long_field_width if self.field_is_long[field_name] else short_field_width))
 
         for child in self.field_names:
             self.field_values[child] = []
@@ -120,7 +120,7 @@ class GUILayout(PageLayout):
                         popup.open()
                         return -1
                 else:
-                    r_self.contact = r_self.contact.replace('-', '').replace('.', '').replace("(", '').replace(")", "")
+                    r_self.contact = r_self.contact.replace('-', '').replace('.', '').replace("(", '').replace(")", '').replace(" ", '')
                     if "@" in r_self.contact or not all(x.isnumeric() or x == '+' for x in r_self.contact):
                         print("Did you mean to send phone messages?")
                         popup = Popup(title="Wrong phone number: " + r_self.contact,
@@ -132,41 +132,8 @@ class GUILayout(PageLayout):
                 for attribute in r_self.all_attributes:
                     print(getattr(r_self, attribute))
 
-        self.transfer_input()
-
-        recipients = []
-        for i in range(len(self.field_values["contact"])):
-            new_recip = Recipient(self.field_names, self.field_values, i)
-            if (new_recip.check_contact() == -1):
-                return
-            recipients.append(new_recip)
-        input()
-
-
-        for i in range(len(raw_contacts)):
-            if (raw_contacts[i] == ""):
-                continue
-
-
-        recipients_str = ""
-        for contact, name in zip (raw_contacts, raw_names):
-            recipients_str += (contact + '\n' + name + "\n\n")
-        recipients_str = recipients_str[:len(recipients_str)-1]
-
-        recipients_file = open(recipients_file_name, 'w')
-        recipients_file.write (recipients_str)
-        recipients_file.close()
-
-        if self.comm_mode == "email":
-            print("\n\nClients' emails and names: ")
-            for i in range(len(self.clients_contacts)):
-                print(str(i + 1) + ":\tEmail:", self.clients_contacts[i], "\n\tName:", self.clients_names[i])
-
-            password = input("\n\u001b[33mTo confirm the list, enter the password for your email:\n\u001b[0m")
-            served_recipients = open(served_recipients_file_name, 'a')
-
-            for receiver_email, name in zip(self.clients_contacts, self.clients_names):
-                print("Sending the email")
+            def send_email (r_self):
+                print("Sending the email to", r_self.contact)
                 try:
                     server = smtplib.SMTP("smtp.gmail.com", 587)
                     server.starttls()
@@ -178,72 +145,95 @@ class GUILayout(PageLayout):
                     email_body = fp.read(),
                     email_body = email_body[0]
                     fp.close()
-                    email_body = email_body.format(name=name)
+
+                    for attribute in r_self.all_attributes:
+                        if attribute == "contact":
+                            continue
+                        email_body = email_body.replace("{" + attribute + "}", getattr(r_self, attribute))
 
                     email_msg = MIMEMultipart()
                     email_msg.attach(MIMEText(email_body, 'html'))
 
                     email_msg['Subject'] = subject
                     email_msg['From'] = sender_email
-
-                    email_msg['To'] = receiver_email
+                    email_msg['To'] = r_self.contact
                     email_msg['Bcc'] = bcc_email
+
                     server.send_message(email_msg)
                     server.quit()
                     print("Server closed; sent email to: " + email_msg['To'])
-                    served_recipients.write(receiver_email + "\n")
-                    served_recipients.write(name + "\n")
-                    served_recipients.write("\n")
+                    served_recipients.write(r_self.contact)
                 except Exception as exception:
                     print("\u001b[34m\tException happened:\n" + str(exception))
+
+            def send_sms(r_self):
+                print("Sending the sms")
+                try:
+                    provider = ["@vzwpix.com", "@tmomail.net", "@mms.att.net", "@mms.uscc.net"]
+                    to = str(r_self.contact)  # Convert digital number into text
+                    fp = open("sms_body.html")
+                    sms_body = fp.read(),
+                    sms_body = sms_body[0]
+                    fp.close()
+                    for selected in provider:
+                        for attribute in r_self.all_attributes:
+                            if attribute == "contact":
+                                continue
+                            sms_body = sms_body.replace("{" + attribute + "}", getattr(r_self, attribute))
+
+                        sms_msg = EmailMessage()
+                        sms_msg.set_content(sms_body)
+                        sms_msg['From'] = sender_email
+                        receiver = r_self.contact + selected
+                        try:
+                            sms_msg["To"] = receiver
+                            print(sms_msg["To"])
+                            server = smtplib.SMTP('smtp.gmail.com', 587)
+                            server.starttls()
+                            server.login(sender_email, password)
+                            server.send_message(sms_msg)
+                            server.quit()
+                        except Exception as bad_guy:
+                            print(bad_guy)
+                            print("Possibly, wrong operator:", selected, "- trying further")
+                except Exception as exception:
+                    print("\u001b[34m\tException happened:\n" + str(exception))
+
+        self.transfer_input()
+
+        recipients = []
+        for i in range(len(self.field_values["contact"])):
+            new_recip = Recipient(self.field_names, self.field_values, i)
+            if (new_recip.check_contact() == -1):
+                return
+            recipients.append(new_recip)
+
+        if self.comm_mode == "email":
+            print("\n\nClients' emails: ")
+            for i in range(len(recipients)):
+                print(f"Email{i}:\t", recipients[i].contact)
+
+            password = input("\n\u001b[33mTo confirm the list, enter the password for your email:\n\u001b[0m")
+            served_recipients = open(served_recipients_file_name, 'a')
+
+            for recip in recipients:
+                recip.send_email()
 
             print("\u001b[33mFinished\u001b[0m")
 
         elif self.comm_mode == "phone":
             print("\n\nClients' phone numbers and names: ")
-            for i in range(len(self.clients_contacts)):
-                print(str(i + 1) + ":\tPhone #:", self.clients_contacts[i], "\n\tName:",
-                      self.clients_names[i])
+            for i in range(len(recipients)):
+                print(f"Phone{i}:\t", recipients[i].contact)
             password = input("\n\u001b[33mTo confirm the list, enter the password for your email:\n\u001b[0m")
-            for phone_num, name in zip(self.clients_contacts, self.clients_names):
-                    print("Sending the email")
-                    try:
-                        number_alert("sms_body.html", name, phone_num, password)
-                    except Exception as exception:
-                        print("\u001b[34m\tException happened:\n" + str(exception))
+            for recip in recipients:
+                recip.send_sms()
 
-        recipients_data_file.close()
+
 
 class GUI(App):
     def build(self):
         return GUILayout()
-def number_alert(sms_file, name, to, password):
-    provider = ["@vzwpix.com", "@tmomail.net", "@mms.att.net", "@mms.uscc.net"]
-    to = str(to)#Convert digital number into text
-    fp = open(sms_file)
-    sms_body = fp.read(),
-    sms_body = sms_body[0]
-    fp.close()
-    for selected in provider:
-        sms_body = sms_body.format(name=name)
-
-        sms_msg = EmailMessage()
-        sms_msg.set_content(sms_body)
-
-        sms_msg['Subject'] = subject
-        sms_msg['From'] = sender_email
-        receiver = to + selected
-        try:
-            sms_msg["To"] = receiver
-            print(sms_msg["To"])
-            server = smtplib.SMTP('smtp.gmail.com', 587)
-            server.starttls()
-            server.login(sender_email, password)
-            server.send_message(sms_msg)
-            server.quit()
-        except Exception as bad_guy:
-            print(bad_guy)
-            print("Wrong operator:", selected, "- trying further")
 
 if __name__ == '__main__':
     GUI().run()
