@@ -11,14 +11,13 @@ from kivy.core.window import Window
 from kivy.uix.pagelayout import PageLayout
 
 from text_box_setup import TextBoxSetup
-from prompt_add_new import PromptAddNew   # NOT to be deleted; used in design.kv
-from entry_field import EntryField        # NOT to be deleted; used in design.kv
+from prompt_add_new import *   # NOT to be deleted; used in design.kv
+from entry_field import *     # NOT to be deleted; used in design.kv
 
-
+#password = 'vkoxtfzsofcjmrig'
 sender_email = "slabysh2015@gmail.com"
 subject = "Subject"
 bcc_email = ""
-password = 'vkoxtfzsofcjmrig'
 recipients_file_name = "recipients.txt"
 served_recipients_file_name = "old_recipients.txt"
 Builder.load_file("design.kv")
@@ -46,7 +45,7 @@ class GUILayout(PageLayout):
     def save_custom_fields(self):
         self.field_names = ["contact"]
         total_long_fields, total_short_fields = 0, 0
-        for field in reversed(self.ids.setup_page.children):
+        for field in reversed(self.textbox_setups.children):
             if type(field) == TextBoxSetup:
                 self.field_names.append(field.text)
                 self.field_is_long[field.text] = field.is_long
@@ -132,7 +131,7 @@ class GUILayout(PageLayout):
                 for attribute in r_self.all_attributes:
                     print(getattr(r_self, attribute))
 
-            def send_email (r_self):
+            def send_email (r_self, password):
                 print("Sending the email to", r_self.contact)
                 try:
                     server = smtplib.SMTP("smtp.gmail.com", 587)
@@ -166,7 +165,7 @@ class GUILayout(PageLayout):
                 except Exception as exception:
                     print("\u001b[34m\tException happened:\n" + str(exception))
 
-            def send_sms(r_self):
+            def send_sms(r_self, password):
                 print("Sending the sms")
                 try:
                     provider = ["@vzwpix.com", "@tmomail.net", "@mms.att.net", "@mms.uscc.net"]
@@ -217,7 +216,7 @@ class GUILayout(PageLayout):
             served_recipients = open(served_recipients_file_name, 'a')
 
             for recip in recipients:
-                recip.send_email()
+                recip.send_email(password)
 
             print("\u001b[33mFinished\u001b[0m")
 
@@ -227,7 +226,7 @@ class GUILayout(PageLayout):
                 print(f"Phone{i}:\t", recipients[i].contact)
             password = input("\n\u001b[33mTo confirm the list, enter the password for your email:\n\u001b[0m")
             for recip in recipients:
-                recip.send_sms()
+                recip.send_sms(password)
 
 
 
