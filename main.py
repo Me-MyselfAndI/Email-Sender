@@ -2,6 +2,8 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.message import EmailMessage
+
+from kivy.uix.gridlayout import GridLayout
 from kivy.uix.popup import Popup
 from kivy.properties import ObjectProperty
 from kivy.lang import Builder
@@ -40,16 +42,61 @@ class GUILayout(PageLayout):
         Window.size = (1000, 700)
 
     def save_custom_fields(self):
-        self.field_names = ["contact"]
+        temp_field_names = ["contact"]
         total_long_fields, total_short_fields = 0, 0
+        temp_field_names, temp_field_is_long = [], {}
         for field in reversed(self.textbox_setups.children):
             if type(field) == TextBoxSetup:
-                self.field_names.append(field.text)
-                self.field_is_long[field.text] = field.is_long
+                temp_field_names.append(field.text)
+                temp_field_is_long[field.text] = field.is_long
                 if field.is_long:
                     total_long_fields += 1
                 else:
                     total_short_fields += 1
+        if self.comm_mode == "email":
+            file = open("email_body.html")
+        else:
+            file = open("sms_body.html")
+
+        braces_var = 0
+        fields_from_file = []
+        curr_word = ""
+        for char in file.read():
+            if braces_var == 0:
+                if curr_word != "":
+                    fields_from_file.append(curr_word.replace("}", ""))
+                    curr_word = ""
+            elif braces_var > 0:
+                curr_word += char
+            else:
+                self.throw_popup("The message is not formatted properly.", "Make sure that all the names in the file are surrounded with correct sets of braces.")
+                return
+            if char == "{":
+                braces_var += 1
+            elif char == "}":
+                braces_var -= 1
+        if braces_var > 0:
+            self.throw_popup("The message is not formatted properly.", "Make sure that all the braces in the file are closed.")
+            return
+
+        if len(fields_from_file) != len(temp_field_names):
+            self.throw_popup("The fields in the message do not match those that you have entered.", "Make sure you entered all the fields in the file, and only once")
+            return
+        fields_to_remove = []
+        for file_field in fields_from_file:
+            for entered_field in temp_field_names:
+                if file_field == entered_field:
+                    fields_to_remove.append(file_field)
+                    print("removed", file_field + ";\t", fields_from_file)
+        for field in fields_to_remove:
+            fields_from_file.remove(field)
+        if len(fields_from_file) != 0:
+            self.throw_popup("The fields in the file do not match those that you have entered. ", "Make sure to check that. Hint: fields are case-sensitive")
+            return
+
+        file.close()
+        self.field_names, self.field_is_long = temp_field_names, temp_field_is_long
+
 
         factor = 2
         short_field_width = 1/(total_short_fields + factor*total_long_fields)
@@ -62,6 +109,7 @@ class GUILayout(PageLayout):
         for child in self.field_names:
             self.field_values[child] = []
 
+
     def set_comm_mode(self, type):
         if type in ["phone", "email"]:
             self.comm_mode = type
@@ -69,9 +117,16 @@ class GUILayout(PageLayout):
             print("\u001b[34mALERT!!! Communication means set incorrectly!")
             self.comm_mode = None
 
-
-
-
+    def throw_popup(self, title, description=None):
+        popup_layout = GridLayout(cols=1)
+        if description != None:
+            popup_layout.add_widget(Label(text=description))
+        close_popup_button = Button(text='Ok', size_hint=(1, None), pos_hint={'center': 0.5}, height=30)
+        popup_layout.add_widget(close_popup_button)
+        popup = Popup(title=title, content=popup_layout, auto_dismiss=False, size_hint=(None, None), size=(600, 200))
+        close_popup_button.bind(on_press=popup.dismiss)
+        popup.open()
+        return
 
     def transfer_input (self):
         for entry_field in self.entry_fields_box_layout.children:
@@ -108,22 +163,13 @@ class GUILayout(PageLayout):
                 if self.comm_mode == "email":
                     if not ("@" in r_self.attrs["contact"] and "." in r_self.attrs["contact"]):
                         print("Wrong email:", r_self.attrs["contact"])
-                        popup = Popup(title="Wrong email: " + r_self.attrs["contact"],
-                                      content=Button(text='I will check!', size_hint=(1, None),
-                                                     pos_hint={'center': 0.5}, height=30),
-                                      auto_dismiss=False, size_hint=(None, None), size=(400, 100))
-                        popup.content.bind(on_press=popup.dismiss)
-                        popup.open()
+                        self.throw_popup("Wrong email: " + r_self.attrs["contact"])
                         return -1
                 else:
                     r_self.attrs["contact"] = r_self.attrs["contact"].replace('-', '').replace('.', '').replace("(", '').replace(")", '').replace(" ", '')
                     if "@" in r_self.attrs["contact"] or not all(x.isnumeric() or x == '+' for x in r_self.attrs["contact"]):
                         print("Did you mean to send phone messages?")
-                        popup = Popup(title="Wrong phone number: " + r_self.attrs["contact"],
-                                      content=Button(text='I will check!', size_hint=(1, None), pos_hint={'center': 0.5}, height=30),
-                                      auto_dismiss=False, size_hint=(None, None), size=(400, 100))
-                        popup.content.bind(on_press=popup.dismiss)
-                        popup.open()
+                        self.throw_popup("Wrong phone number " + r_self.attrs["contact"])
                         return -1
                 for attribute in r_self.attr_names:
                     print(r_self.attrs[attribute])
@@ -154,7 +200,6 @@ class GUILayout(PageLayout):
                     email_msg['From'] = sender_email
                     email_msg['To'] = r_self.attrs["contact"]
                     email_msg['Bcc'] = bcc_email
-
                     server.send_message(email_msg)
                     server.quit()
                     print("Server closed; sent email to: " + email_msg['To'])
@@ -194,6 +239,7 @@ class GUILayout(PageLayout):
                             print("Possibly, wrong operator:", selected, "- trying further")
                 except Exception as exception:
                     print("\u001b[34m\tException happened:\n" + str(exception))
+
 
         self.transfer_input()
 
