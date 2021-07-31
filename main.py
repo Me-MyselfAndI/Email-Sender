@@ -1,16 +1,13 @@
-import smtplib, time
+import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.message import EmailMessage
-from kivy.app import App
 from kivy.uix.popup import Popup
-from kivy.uix.button import Button
 from kivy.properties import ObjectProperty
 from kivy.lang import Builder
-from kivy.core.window import Window
 from kivy.uix.pagelayout import PageLayout
 
-from text_box_setup import TextBoxSetup
+from text_box_setup import TextBoxSetup   # NOT to be deleted; used in design.kv
 from prompt_add_new import *   # NOT to be deleted; used in design.kv
 from entry_field import *     # NOT to be deleted; used in design.kv
 
@@ -101,17 +98,17 @@ class GUILayout(PageLayout):
     def submit(self):
         class Recipient:
             def __init__(r_self, field_names, field_values, recip_num):
-                r_self.all_attributes = []
+                r_self.attr_names = []
+                r_self.attrs = {}
                 for field in field_names:
-                    setattr(r_self, field, field_values[field][recip_num])
-                    r_self.all_attributes.append(field)
-                    print(getattr(r_self, field))
+                    r_self.attrs[field] = field_values[field][recip_num]
+                    r_self.attr_names.append(field)
 
             def check_contact(r_self):
                 if self.comm_mode == "email":
-                    if not ("@" in r_self.contact and "." in r_self.contact):
-                        print("Wrong email:", r_self.contact)
-                        popup = Popup(title="Wrong email: " + r_self.contact,
+                    if not ("@" in r_self.attrs["contact"] and "." in r_self.attrs["contact"]):
+                        print("Wrong email:", r_self.attrs["contact"])
+                        popup = Popup(title="Wrong email: " + r_self.attrs["contact"],
                                       content=Button(text='I will check!', size_hint=(1, None),
                                                      pos_hint={'center': 0.5}, height=30),
                                       auto_dismiss=False, size_hint=(None, None), size=(400, 100))
@@ -119,20 +116,20 @@ class GUILayout(PageLayout):
                         popup.open()
                         return -1
                 else:
-                    r_self.contact = r_self.contact.replace('-', '').replace('.', '').replace("(", '').replace(")", '').replace(" ", '')
-                    if "@" in r_self.contact or not all(x.isnumeric() or x == '+' for x in r_self.contact):
+                    r_self.attrs["contact"] = r_self.attrs["contact"].replace('-', '').replace('.', '').replace("(", '').replace(")", '').replace(" ", '')
+                    if "@" in r_self.attrs["contact"] or not all(x.isnumeric() or x == '+' for x in r_self.attrs["contact"]):
                         print("Did you mean to send phone messages?")
-                        popup = Popup(title="Wrong phone number: " + r_self.contact,
+                        popup = Popup(title="Wrong phone number: " + r_self.attrs["contact"],
                                       content=Button(text='I will check!', size_hint=(1, None), pos_hint={'center': 0.5}, height=30),
                                       auto_dismiss=False, size_hint=(None, None), size=(400, 100))
                         popup.content.bind(on_press=popup.dismiss)
                         popup.open()
                         return -1
-                for attribute in r_self.all_attributes:
-                    print(getattr(r_self, attribute))
+                for attribute in r_self.attr_names:
+                    print(r_self.attrs[attribute])
 
             def send_email (r_self, password):
-                print("Sending the email to", r_self.contact)
+                print("Sending the email to", r_self.attrs["contact"])
                 try:
                     server = smtplib.SMTP("smtp.gmail.com", 587)
                     server.starttls()
@@ -145,23 +142,23 @@ class GUILayout(PageLayout):
                     email_body = email_body[0]
                     fp.close()
 
-                    for attribute in r_self.all_attributes:
+                    for attribute in r_self.attr_names:
                         if attribute == "contact":
                             continue
-                        email_body = email_body.replace("{" + attribute + "}", getattr(r_self, attribute))
+                        email_body = email_body.replace("{" + attribute + "}", r_self.attrs[attribute])
 
                     email_msg = MIMEMultipart()
                     email_msg.attach(MIMEText(email_body, 'html'))
 
                     email_msg['Subject'] = subject
                     email_msg['From'] = sender_email
-                    email_msg['To'] = r_self.contact
+                    email_msg['To'] = r_self.attrs["contact"]
                     email_msg['Bcc'] = bcc_email
 
                     server.send_message(email_msg)
                     server.quit()
                     print("Server closed; sent email to: " + email_msg['To'])
-                    served_recipients.write(r_self.contact)
+                    served_recipients.write(r_self.attrs["contact"])
                 except Exception as exception:
                     print("\u001b[34m\tException happened:\n" + str(exception))
 
@@ -169,21 +166,21 @@ class GUILayout(PageLayout):
                 print("Sending the sms")
                 try:
                     provider = ["@vzwpix.com", "@tmomail.net", "@mms.att.net", "@mms.uscc.net"]
-                    to = str(r_self.contact)  # Convert digital number into text
+                    to = str(r_self.attrs["contact"])  # Convert digital number into text
                     fp = open("sms_body.html")
                     sms_body = fp.read(),
                     sms_body = sms_body[0]
                     fp.close()
                     for selected in provider:
-                        for attribute in r_self.all_attributes:
+                        for attribute in r_self.attr_names:
                             if attribute == "contact":
                                 continue
-                            sms_body = sms_body.replace("{" + attribute + "}", getattr(r_self, attribute))
+                            sms_body = sms_body.replace("{" + attribute + "}", r_self.attrs[attribute])
 
                         sms_msg = EmailMessage()
                         sms_msg.set_content(sms_body)
                         sms_msg['From'] = sender_email
-                        receiver = r_self.contact + selected
+                        receiver = r_self.attrs["contact"] + selected
                         try:
                             sms_msg["To"] = receiver
                             print(sms_msg["To"])
@@ -210,7 +207,7 @@ class GUILayout(PageLayout):
         if self.comm_mode == "email":
             print("\n\nClients' emails: ")
             for i in range(len(recipients)):
-                print(f"Email{i}:\t", recipients[i].contact)
+                print(f"Email{i}:\t", recipients[i].attrs["contact"])
 
             password = input("\n\u001b[33mTo confirm the list, enter the password for your email:\n\u001b[0m")
             served_recipients = open(served_recipients_file_name, 'a')
@@ -223,7 +220,7 @@ class GUILayout(PageLayout):
         elif self.comm_mode == "phone":
             print("\n\nClients' phone numbers and names: ")
             for i in range(len(recipients)):
-                print(f"Phone{i}:\t", recipients[i].contact)
+                print(f"Phone{i}:\t", recipients[i].attrs["contact"])
             password = input("\n\u001b[33mTo confirm the list, enter the password for your email:\n\u001b[0m")
             for recip in recipients:
                 recip.send_sms(password)
