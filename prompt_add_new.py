@@ -1,6 +1,6 @@
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.button import Button
+from rounded_button import RoundedButton
 
 from text_box_setup import TextBoxSetup
 
@@ -10,9 +10,9 @@ class PromptAddNew(BoxLayout):
     columns = 2
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.button_add_short = Button(text="Add Short Textbox", size_hint=(0.4, None), height=40)
-        self.button_add_long = Button(text="Add Long Textbox", size_hint=(0.4, None), height=40)
-        self.button_save = Button(text="Save Custom Fields", size_hint=(0.2, None), height=40)
+        self.button_add_short = RoundedButton(text="Add Short Textbox", size_hint=(0.4, None), height=40)
+        self.button_add_long = RoundedButton(text="Add Long Textbox", size_hint=(0.4, None), height=40)
+        self.button_save = RoundedButton(text="Save Custom Fields", size_hint=(0.2, None), height=40)
         self.add_widget(self.button_add_short)
         self.add_widget(self.button_save)
         self.add_widget(self.button_add_long)

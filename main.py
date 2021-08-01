@@ -10,8 +10,9 @@ from kivy.lang import Builder
 from kivy.uix.pagelayout import PageLayout
 
 from text_box_setup import TextBoxSetup   # NOT to be deleted; used in design.kv
-from prompt_add_new import *   # NOT to be deleted; used in design.kv
-from entry_field import *     # NOT to be deleted; used in design.kv
+from prompt_add_new import *    # NOT to be deleted; used in design.kv
+from entry_field import *       # NOT to be deleted; used in design.kv
+from rounded_button import *     # NOT to be deleted; used in design.kv
 
 #password = 'vkoxtfzsofcjmrig'
 sender_email = "slabysh2015@gmail.com"
@@ -20,11 +21,6 @@ bcc_email = ""
 recipients_file_name = "recipients.txt"
 served_recipients_file_name = "old_recipients.txt"
 Builder.load_file("design.kv")
-
-
-
-
-
 
 class GUILayout(PageLayout):
     setup_page = ObjectProperty(None)
@@ -95,12 +91,15 @@ class GUILayout(PageLayout):
             return
 
         file.close()
-        self.field_names, self.field_is_long = temp_field_names, temp_field_is_long
-
+        self.field_names, self.field_is_long = ["contact"], {"contact": True}
+        self.field_names.extend(temp_field_names)
+        self.field_is_long.update(temp_field_is_long)
 
         factor = 2
         short_field_width = 1/(total_short_fields + factor*total_long_fields)
         long_field_width = short_field_width*factor
+
+        self.entry_fields_box_layout.clear_widgets()
 
         for field_name in self.field_names:
             self.entry_fields_box_layout.add_widget(
@@ -121,7 +120,7 @@ class GUILayout(PageLayout):
         popup_layout = GridLayout(cols=1)
         if description != None:
             popup_layout.add_widget(Label(text=description))
-        close_popup_button = Button(text='Ok', size_hint=(1, None), pos_hint={'center': 0.5}, height=30)
+        close_popup_button = RoundedButton(text='Ok', size_hint=(1, None), pos_hint={'center': 0.5}, height=30)
         popup_layout.add_widget(close_popup_button)
         popup = Popup(title=title, content=popup_layout, auto_dismiss=False, size_hint=(None, None), size=(600, 200))
         close_popup_button.bind(on_press=popup.dismiss)

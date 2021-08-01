@@ -1,21 +1,21 @@
 from kivy.graphics.context_instructions import Color
 from kivy.graphics.vertex_instructions import Rectangle
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.button import Button
+from rounded_button import RoundedButton
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.app import App
 
 class TextBoxSetup(BoxLayout):
-    class DeleteButton(Button):
+    class DeleteButton(RoundedButton):
         def __init__(self, **kwargs):
             super().__init__(**kwargs)
-            self.text = " Delete "
+            self.text = " Delete"
             self.size_hint = (None, None)
             self.pos_hint = {"top": 1}
-            self.height = 60
-            self.width = 60
+            self.height = 72
+            self.width = 72
 
         def on_press(self, *args):
             App.get_running_app().root.ids.textbox_setups.remove_widget(self.parent)
@@ -27,7 +27,7 @@ class TextBoxSetup(BoxLayout):
             self.text = "ENTER TITLE " + ("(short)" if not is_long else "(long)")
             self.background_color = (0.3, 0.3, 0.3, 1)
             self.size_hint = (1, None)
-            self.height = 30
+            self.height = 36
             self.bind (pos=self.update, size=self.update)
             with self.canvas.before:
                 Color(rgba=self.background_color)
@@ -49,10 +49,10 @@ class TextBoxSetup(BoxLayout):
         self.text = name
         self.delete_button = self.DeleteButton (**kwargs)
         self.field_title = self.FieldTitle (name, is_long=is_long, **kwargs)
-        self.setup_label_field = TextInput (size_hint=(1, None), height=30, text="", hint_text="This field's title")
+        self.setup_label_field = TextInput (size_hint=(1, None), height=36, text="", hint_text="This field's title")
         self.setup_label_field.bind(text=self.update)
 
-        self.spacing = 10
+        self.spacing = 5
         self.orientation = "horizontal"
         self.size_hint = (0.5, None)
         #self.all_widgets = BoxLayout()
@@ -61,9 +61,6 @@ class TextBoxSetup(BoxLayout):
         self.grid_layout.add_widget(self.field_title)
         self.grid_layout.add_widget(self.setup_label_field)
         self.add_widget(self.grid_layout)
-
-    #def on_parent(self, *args):
-    #    App.get_running_app().root.ids.textbox_setups.add_widget(self.all_widgets)
 
     def update(self, *args):
         self.text = self.setup_label_field.text

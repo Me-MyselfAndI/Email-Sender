@@ -1,7 +1,21 @@
-2
+3
 contact
-name 1
+kid_name
+parent_name
 
-8438138537
-Greg
+slabysh2015@gmail.com
+Ekaterina
+Mikita
+###---###---###
+undonecayon@gmail.com
+Roman
+Nick
+###---###---###
+h.podoksik@gmail.com
+Liza
+Harvie
+###---###---###
+yeah4sureee@gmail.com
+Borissa
+Mr. Yeah, Bitch
 ###---###---###

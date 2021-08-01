@@ -5,9 +5,44 @@
     size: root.width, root.height
     textbox_setups: textbox_setups
     entry_fields_box_layout: entry_fields
-
-
     border: 20
+
+    GridLayout:
+        canvas.before:
+            Rectangle:
+                pos: self.pos
+                size: self.size
+                source: 'Images/collapse.jpg'
+        cols: 1
+        Label:
+            text: "Choose delivery mode:"
+        BoxLayout:
+            orientation: "horizontal"
+            columns: 2
+            allow_stretch: True
+            ToggleButton:
+                color: 0.2, 0.2, 0.2, 1
+                background_normal: "button1.png"
+                background_down: "button2.png"
+                borders: 15, 15, 15, 15
+                group: "means of connection"
+                text: "Phone"
+                size_hint: (1, 0.15)
+                pos_hint: {'top' : 0.5}
+                on_press: root.set_comm_mode("phone")
+
+            ToggleButton:
+                color: 0.2, 0.2, 0.2, 1
+                background_normal: "button1.png"
+                background_down: "button2.png"
+                borders: 15, 15, 15, 15
+                group: "means of connection"
+                text: "Email"
+                size_hint: (1, 0.15)
+                pos_hint: {'top' : 0.5}
+                on_press: root.set_comm_mode("email")
+
+
     GridLayout:
         id: setup_page
         canvas.before:
@@ -30,10 +65,6 @@
             padding: 30, 50
             size_hint: (1, 1)
             size: (root.width, root.height - 100)
-            #Button:
-            #    text: "blablabla"
-            #Button:
-            #    text: "blablabla"
 
         PromptAddNew:
             height: 0.4 * root.height
@@ -65,22 +96,6 @@
                 size_hint: (1, None)
                 height: 30
 
-            ToggleButton:
-                group: "means of connection"
-                text: "Phone"
-                size_hint: (1, 0.1)
-                pos_hint: { 'top' : 1}
-                on_press: root.set_comm_mode("phone")
-
-            ToggleButton:
-                group: "means of connection"
-                text: "Email"
-                size_hint: (1, 0.1)
-                pos_hint: { 'top' : 1}
-                on_press: root.set_comm_mode("email")
-
-
-
         BoxLayout:
             id: entry_fields
             orientation: "horizontal"
@@ -89,8 +104,9 @@
             padding: 10
             size: root.width, root.height*0.7
 
-        Button:
+        RoundedButton:
             id: button
             text: "Send"
-            size_hint: (1, 0.1)
+            pos_hint: {"center_x": 0.5}
+            size_hint: (0.6, 0.2)
             on_press: root.submit()
