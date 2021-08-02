@@ -14,8 +14,6 @@ from prompt_add_new import *    # NOT to be deleted; used in design.kv
 from entry_field import *       # NOT to be deleted; used in design.kv
 from rounded_button import *     # NOT to be deleted; used in design.kv
 
-#password = 'vkoxtfzsofcjmrig'
-sender_email = "slabysh2015@gmail.com"
 subject = "Subject"
 bcc_email = ""
 recipients_file_name = "recipients.txt"
@@ -28,6 +26,8 @@ class GUILayout(PageLayout):
     entry_fields_box_layout = ObjectProperty(None)
     send_button = ObjectProperty(None)
     contacts = ObjectProperty(None)
+    email_box = ObjectProperty(None)
+    password_box = ObjectProperty(None)
     def __init__(self, **kwargs):
         super(GUILayout, self).__init__(**kwargs)
         self.field_names = ["contact"]
@@ -38,6 +38,8 @@ class GUILayout(PageLayout):
         Window.size = (1000, 700)
 
     def save_custom_fields(self):
+        self.sender_email = self.email_box.children[1].text
+        self.password = self.password_box.children[1].text
         temp_field_names = ["contact"]
         total_long_fields, total_short_fields = 0, 0
         temp_field_names, temp_field_is_long = [], {}
@@ -173,13 +175,13 @@ class GUILayout(PageLayout):
                 for attribute in r_self.attr_names:
                     print(r_self.attrs[attribute])
 
-            def send_email (r_self, password):
+            def send_email (r_self):
                 print("Sending the email to", r_self.attrs["contact"])
                 try:
                     server = smtplib.SMTP("smtp.gmail.com", 587)
                     server.starttls()
 
-                    server.login(sender_email, password)
+                    server.login(self.sender_email, self.password)
                     print("Login success")
 
                     fp = open("email_body.html")
@@ -196,7 +198,7 @@ class GUILayout(PageLayout):
                     email_msg.attach(MIMEText(email_body, 'html'))
 
                     email_msg['Subject'] = subject
-                    email_msg['From'] = sender_email
+                    email_msg['From'] = self.sender_email
                     email_msg['To'] = r_self.attrs["contact"]
                     email_msg['Bcc'] = bcc_email
                     server.send_message(email_msg)
@@ -206,10 +208,18 @@ class GUILayout(PageLayout):
                 except Exception as exception:
                     print("\u001b[34m\tException happened:\n" + str(exception))
 
-            def send_sms(r_self, password):
+            def send_sms(r_self):
                 print("Sending the sms")
                 try:
-                    provider = ["@vzwpix.com", "@tmomail.net", "@mms.att.net", "@mms.uscc.net"]
+                    provider = ["@tmomail.net", "@mms.att.net", "@sprintpaging.com", "@myvzw.com", "@voicestream.net",
+                                "@msg.acsalaska.com", "@text.bell.ca", "@text.mts.net", "@sms.bluecell.com",
+                                "@myboostmobile.com", "@cellcom.quiktxt.com", "@pcs.rogers.com", "@mailmymobile.net",
+                                "@mms.cricketwireless.net", "@cspire1.com", "@digitextlc.com", "@mms.eastlink.ca", "@fido.ca",
+                                "@mobile.gci.net", "@msg.fi.google.com", "@ivctext.com", "@msg.telus.com",
+                                "@mymetropcsmymetropcs.com", "@sms.nextechwireless.com", "@mobiletxt.ca", "@zsend.com",
+                                "@text.republicwireless.com", "@sms.sasktel.com", "@mmst5.tracfone.com", "@vtext.com",
+                                "@rinasms.com", "@message.ting.com", "@messaging.sprintpcs.com", "@mms.unionwireless.com",
+                                "@email.uscc.net", "@viaerosms.com", "@vmobl.com", "@vmobile.ca"]
                     to = str(r_self.attrs["contact"])  # Convert digital number into text
                     fp = open("sms_body.html")
                     sms_body = fp.read(),
@@ -223,14 +233,14 @@ class GUILayout(PageLayout):
 
                         sms_msg = EmailMessage()
                         sms_msg.set_content(sms_body)
-                        sms_msg['From'] = sender_email
+                        sms_msg['From'] = self.sender_email
                         receiver = r_self.attrs["contact"] + selected
                         try:
                             sms_msg["To"] = receiver
                             print(sms_msg["To"])
                             server = smtplib.SMTP('smtp.gmail.com', 587)
                             server.starttls()
-                            server.login(sender_email, password)
+                            server.login(self.sender_email, self.password)
                             server.send_message(sms_msg)
                             server.quit()
                         except Exception as bad_guy:
@@ -254,11 +264,10 @@ class GUILayout(PageLayout):
             for i in range(len(recipients)):
                 print(f"Email{i}:\t", recipients[i].attrs["contact"])
 
-            password = input("\n\u001b[33mTo confirm the list, enter the password for your email:\n\u001b[0m")
             served_recipients = open(served_recipients_file_name, 'a')
 
             for recip in recipients:
-                recip.send_email(password)
+                recip.send_email()
 
             print("\u001b[33mFinished\u001b[0m")
 
@@ -266,9 +275,8 @@ class GUILayout(PageLayout):
             print("\n\nClients' phone numbers and names: ")
             for i in range(len(recipients)):
                 print(f"Phone{i}:\t", recipients[i].attrs["contact"])
-            password = input("\n\u001b[33mTo confirm the list, enter the password for your email:\n\u001b[0m")
             for recip in recipients:
-                recip.send_sms(password)
+                recip.send_sms()
 
 
 

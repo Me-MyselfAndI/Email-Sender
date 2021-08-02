@@ -1,4 +1,23 @@
+<LabeledInput@BoxLayout>:
+    cols: 2
+    pos_hint: {"center_x": 0.5}
+    text: ""
+    Widget:
+    Label:
+        size_hint: (None, None)
+        text: root.text
+        width: 200
+        height: 30
+    TextInput:
+        size_hint: (None, None)
+        width: 400
+        height: 30
+    Widget:
+
+
 <GUILayout>
+    email_box: email
+    password_box: password
     send_button: button
     send_page: send_page
     setup_page: setup_page
@@ -6,7 +25,6 @@
     textbox_setups: textbox_setups
     entry_fields_box_layout: entry_fields
     border: 20
-
     GridLayout:
         canvas.before:
             Rectangle:
@@ -14,8 +32,23 @@
                 size: self.size
                 source: 'Images/collapse.jpg'
         cols: 1
+        row_default_height: '30dp'
+
+        spacing: 20, 20
+        #orientation: "vertical"
+        LabeledInput:
+            id: email
+            text: "Your Email"
+            size: root.width - 200, 30
+        LabeledInput:
+            id: password
+            text: "Password"
+            size: root.width - 200, 30
+        Widget:
+            size_hint: None, None
+            size: root.width, root.height / 4
         Label:
-            text: "Choose delivery mode:"
+            text: "Choose delivery mode and swipe right to the next page:"
         BoxLayout:
             orientation: "horizontal"
             columns: 2
@@ -27,7 +60,7 @@
                 borders: 15, 15, 15, 15
                 group: "means of connection"
                 text: "Phone"
-                size_hint: (1, 0.15)
+                size_hint: (1, 0.4)
                 pos_hint: {'top' : 0.5}
                 on_press: root.set_comm_mode("phone")
 
@@ -38,7 +71,7 @@
                 borders: 15, 15, 15, 15
                 group: "means of connection"
                 text: "Email"
-                size_hint: (1, 0.15)
+                size_hint: (1, 0.4)
                 pos_hint: {'top' : 0.5}
                 on_press: root.set_comm_mode("email")
 
@@ -110,3 +143,4 @@
             pos_hint: {"center_x": 0.5}
             size_hint: (0.6, 0.2)
             on_press: root.submit()
+

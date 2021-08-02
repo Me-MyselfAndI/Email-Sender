@@ -1,21 +1,10 @@
-3
+2
 contact
-kid_name
-parent_name
+name
 
-slabysh2015@gmail.com
-Ekaterina
-Mikita
-###---###---###
-undonecayon@gmail.com
-Roman
-Nick
-###---###---###
-h.podoksik@gmail.com
-Liza
+8438138537
 Harvie
 ###---###---###
-yeah4sureee@gmail.com
-Borissa
-Mr. Yeah, Bitch
+7707574196
+Nick
 ###---###---###
