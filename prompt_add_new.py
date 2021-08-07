@@ -18,6 +18,8 @@ class PromptAddNew(BoxLayout):
         self.add_widget(self.button_add_long)
 
     def on_parent(self, *args):
+        self.setup_page = self.parent.parent
+
         self.button_add_short.on_press = self.add_short_field
         self.button_add_long.on_press = self.add_long_field
         self.button_save.on_press = self.parent.parent.save_custom_fields
@@ -30,4 +32,4 @@ class PromptAddNew(BoxLayout):
 
     def add_field(self, is_long=False):
         print(self.parent)
-        App.get_running_app().root.textbox_setups.add_widget(TextBoxSetup(is_long=is_long))
+        self.setup_page.ids.textbox_setups.add_widget(TextBoxSetup(is_long=is_long))

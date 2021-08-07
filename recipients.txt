@@ -1,10 +1,9 @@
-2
+3
 contact
-name
+parent
+kid
 
-843813.85-37
-Harvie
-###---###---###
-770-757-4196
-Mikita
+grishapodoksik2001@gmail.com
+Parent1
+Kid1
 ###---###---###

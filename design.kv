@@ -15,16 +15,15 @@
     Widget:
 
 
-<GUILayout>
-    email_box: email
-    password_box: password
-    send_button: button
-    send_page: send_page
-    setup_page: setup_page
+GUILayout:
     size: root.width, root.height
-    textbox_setups: textbox_setups
-    entry_fields_box_layout: entry_fields
+    #textbox_setups: textbox_setups
     border: 20
+
+
+
+<LoginScreen>:
+    name: "login_page"
     GridLayout:
         canvas.before:
             Rectangle:
@@ -35,7 +34,6 @@
         row_default_height: '30dp'
 
         spacing: 20, 20
-        #orientation: "vertical"
         LabeledInput:
             id: email
             text: "Your Email"
@@ -48,7 +46,7 @@
             size_hint: None, None
             size: root.width, root.height / 4
         Label:
-            text: "Choose delivery mode and swipe right to the next page:"
+            text: "Choose delivery mode:"
         BoxLayout:
             orientation: "horizontal"
             columns: 2
@@ -62,7 +60,7 @@
                 text: "Phone"
                 size_hint: (1, 0.4)
                 pos_hint: {'top' : 0.5}
-                on_press: root.set_comm_mode("phone")
+                on_release: root.set_comm_mode("phone")
 
             ToggleButton:
                 color: 0.2, 0.2, 0.2, 1
@@ -73,8 +71,10 @@
                 text: "Email"
                 size_hint: (1, 0.4)
                 pos_hint: {'top' : 0.5}
-                on_press: root.set_comm_mode("email")
+                on_release: root.set_comm_mode("email")
 
+<SetupScreen>:
+    name: "setup_page"
 
     GridLayout:
         id: setup_page
@@ -89,7 +89,8 @@
         spacing: 10, 10
         padding: 50, 50
         size_hint: (None, None)
-        size: (root.width - 100, root.height - 100)
+        size: (root.width, root.height)
+        pos_hint: {"center_x": 0.5, "center_y": 0.5}
 
         GridLayout:
             id: textbox_setups
@@ -102,6 +103,10 @@
         PromptAddNew:
             height: 0.4 * root.height
 
+<SendScreen>:
+    name: "send_page"
+
+    entry_fields_box_layout: entry_fields
     BoxLayout:
         id: send_page
         canvas.before:
@@ -114,7 +119,7 @@
         allow_stretch: True
         spacing: 10
         padding: 10
-        size: root.width, root.height
+        #size: root.width, root.height
 
         BoxLayout:
             orientation: "horizontal"
@@ -144,3 +149,19 @@
             size_hint: (0.6, 0.2)
             on_press: root.submit()
 
+
+<InProgressScreen>:
+    name: "in_progress_page"
+    ProgressBar:
+        id: progress_bar
+        value: 0
+        min: 0
+        max: 100
+        pos_hint: {"center_x": 0.5}
+        size_hint: 0.8, 0.2
+    Label:
+        canvas.before:
+            Rectangle:
+                pos: self.pos
+                size: self.size
+                source: 'text_background.png'

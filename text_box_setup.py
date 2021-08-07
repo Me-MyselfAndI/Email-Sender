@@ -14,11 +14,14 @@ class TextBoxSetup(BoxLayout):
             self.text = " Delete"
             self.size_hint = (None, None)
             self.pos_hint = {"top": 1}
-            self.height = 72
-            self.width = 72
+            self.width, self.height = 72, 72
+            self.screen = None
 
+        def on_parent(self, *args):
+            self.screen = App.get_running_app().root.get_screen("setup_page")
+            
         def on_press(self, *args):
-            App.get_running_app().root.ids.textbox_setups.remove_widget(self.parent)
+            self.screen.ids.textbox_setups.remove_widget(self.parent)
 
     class FieldTitle (Label):
         def __init__(self, text, is_long=False, **kwargs):
