@@ -50,7 +50,15 @@ class LoginScreen(Screen):
         else:
             print("\u001b[34mALERT!!! Communication means set incorrectly!")
             self.comm_mode = None
-        self.screen_manager.current = "setup_page"
+        try:
+            server = smtplib.SMTP("smtp.gmail.com", 587)
+            server.starttls()
+            server.login(self.sender_email, self.sender_password)
+            print("Login success")
+            server.quit()
+            self.screen_manager.current = "setup_page"
+        except Exception:
+            throw_popup("Could Not Log In", "Wrong email or password")
 
 class SetupScreen(Screen):
     def __init__(self, screen_manager, **kwargs):
@@ -63,8 +71,8 @@ class SetupScreen(Screen):
         self.login_page = self.parent.login_page
         self.send_page = self.parent.send_page
 
-        self.sender_email = self.login_page.sender_email  # self.sender_email = self.email_box.children[1].text
-        self.password = self.login_page.sender_password  # self.sender_password = self.password_box.children[1].text
+        self.sender_email = self.login_page.sender_email
+        self.password = self.login_page.sender_password
         self.comm_mode = self.login_page.comm_mode
 
     def save_custom_fields(self):
