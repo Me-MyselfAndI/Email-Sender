@@ -12,6 +12,7 @@
         size_hint: (None, None)
         width: 400
         height: 30
+        #multiline: False
     Widget:
 
 
@@ -29,14 +30,14 @@ GUILayout:
             Rectangle:
                 pos: self.pos
                 size: self.size
-                source: 'Images/collapse.jpg'
+                source: 'Images/black.jpg'
         cols: 1
         row_default_height: '30dp'
 
         spacing: 20, 20
         LabeledInput:
             id: email
-            text: "Your GMail"
+            text: "Your EMail"
             size: root.width - 200, 30
         LabeledInput:
             id: password
@@ -82,7 +83,7 @@ GUILayout:
             Rectangle:
                 pos: self.pos
                 size: self.size
-                source: 'Images/rick_and_morty.jpg'
+                source: 'Images/black.jpg'
 
         cols: 1
         pos: 100, 100
@@ -113,7 +114,7 @@ GUILayout:
             Rectangle:
                 pos: self.pos
                 size: self.size
-                source: 'Images/collapse.jpg'
+                source: 'Images/black.jpg'
         columns: 1
         orientation: "vertical"
         allow_stretch: True
@@ -165,3 +166,22 @@ GUILayout:
                 pos: self.pos
                 size: self.size
                 source: 'text_background.png'
+
+<FileSelector@BoxLayout>:
+    orientation: "vertical"
+    file_chooser_type: root.file_chooser_type
+    cols: 1
+    BoxLayout:
+        orienttion: "horizontal"
+        cols: 2
+        Button:
+            id: select_file_button
+            text: "Select"
+        TextInput:
+            id: file_name
+            multiline: False
+    FileChooserListView:
+        id: files
+        on_selection:
+            if self.selection: select_file_button.text = "Select " + self.selection[0]
+            else: select_file_button.text = "Select a file"

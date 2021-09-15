@@ -37,10 +37,12 @@ def throw_popup(title, description=None):
 class LoginScreen(Screen):
     def __init__(self, screen_manager, **kwargs):
         super(LoginScreen, self).__init__(**kwargs)
-        self.email_box = self.ids.email
-        self.password_box = self.ids.password
         self.screen_manager = screen_manager
         self.comm_mode = None
+
+#    def on_parent(self, *args):
+        self.email_box = self.ids.email
+        self.password_box = self.ids.password
 
     def set_comm_mode(self, type):
         self.sender_email = self.email_box.children[1].text

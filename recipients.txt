@@ -1,9 +1,13 @@
 3
 contact
-parent
 kid
+parent
 
-grishapodoksik2001@gmail.com
-Parent1
-Kid1
+janedoe@email.com
+Dave
+Jane
+###---###---###
+john.smith.sr@email.com
+John Jr.
+Jon
 ###---###---###
